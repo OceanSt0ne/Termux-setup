@@ -1,0 +1,80 @@
+{
+  "$schema": "https://github.com",
+  "logo": {
+    "type": "data",
+    "source": "\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠠⢤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⡴⠒⠒⠒⠒⠒⠶⠦⠄⢹⣄⠀⠀⠑⠄⣀⡠⠤⠴⠒⠒⠒⠀⠀\n⢇⠀⠀⠀⠀⠀⠀⠐⠋⠀⠒⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀\n⠈⢆⠀⠀⠀⠀⡤⠤⣄⠀⠀⠀⠀⡤⠤⢄⠀⠀⠀⠀⠀⣠⠃⠀\n⠀⡀⠑⢄⡀⡜⠀⡜⠉⡆⠀⠀⠀⡎⠙⡄⠳⡀⢀⣀⣜⠁⠀⠀\n⠀⠹⣍⠑⠀⡇⠀⢣⣰⠁⠀⠀⠀⠱⣠⠃⠀⡇⠁⣠⠞⠀⠀⠀\n⠀⠀⠀⡇⠔⣦⠀⠀⠀⠈⣉⣀⡀⠀⠀⠰⠶⠖⠘⢧⠀⠀⠀⠀\n⠀⠀⠰⠤⠐⠤⣀⡀⠀⠈⠑⣄⡁⠀⡀⣀⠴⠒⠀⠒⠃⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⠘⢯⡉⠁⠀⠀⠀⠀⠉⢆⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⠀⠀⠀⠀⠀⢀⣞⡄⠀⠀⠀⠀⠀⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀",
+    "color": {
+      "1": "magenta"
+    },
+    "padding": {
+      "right": 2
+    }
+  },
+  "display": {
+    "separator": " ──> "
+  },
+  "modules": [
+    // Отступ сверху
+    "break",
+    {
+      "type": "title",
+      "key": "    ฅ•ω•ฅ Юзеp",
+      "color": {
+        "user": "magenta",
+        "at": "white",
+        "host": "magenta"
+      }
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": " OwO Окpужение"
+    },
+    {
+      "type": "os",
+      "key": "├─   Платфоpма"
+    },
+    {
+      "type": "kernel",
+      "key": "├─  Ядpышко",
+      "format": "Linux 6.1.175"
+    },
+    {
+      "type": "wm",
+      "key": "├─   Окошки"
+    },
+    {
+      "type": "terminal",
+      "key": "└─  Теpминальчик"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": " Железяки"
+    },
+    {
+      "type": "cpu",
+      "key": "├─  ЦПешка",
+      "format": "Qualcomm Snapdragon 8s Gen 3"
+    },
+    {
+      "type": "gpu",
+      "key": "├─   Видяшка",
+      "format": "Qualcomm Adreno 735"
+    },
+    {
+      "type": "memory",
+      "key": "├─  Память"
+    },
+    {
+      "type": "uptime",
+      "key": "└─     Аптайм"
+    },
+    "break",
+    {
+      "type": "colors",
+      "symbol": "circle"
+    }
+  ]
+}
+

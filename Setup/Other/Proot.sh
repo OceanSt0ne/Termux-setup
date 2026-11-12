@@ -41,18 +41,8 @@ check_proot_distro() {
 # ==============================================================================
 # PROOT SETUP (дерево пакетов)
 # ==============================================================================
-PROOT_CAT_LABELS=(
-    "${GREEN}${BOLD}[1]${RESET} Install Arch Linux ARM ${DIM}(Fresh Base)${RESET}"
-    "${GREEN}${BOLD}[2]${RESET} Install Linux Kernel ${DIM}(Headers & Firmware)${RESET}"
-    "${GREEN}${BOLD}[3]${RESET} Install GPU Hardware Accel ${DIM}(Mesa Turnip)${RESET}"
-    "${GREEN}${BOLD}[4]${RESET} Install Dev Tools ${DIM}(wget, curl, git, rust, clang, python, go)${RESET}"
-    "${GREEN}${BOLD}[5]${RESET} Install YAY ${DIM}(AUR Helper - Requires User from Step 1)${RESET}"
-)
-PROOT_CAT_PKGS_0=(nano sudo fastfetch wget)
-PROOT_CAT_PKGS_1=(linux linux-firmware linux-headers dbus)
-PROOT_CAT_PKGS_2=(mesa mesa-demos unzip vulkan-icd-loader vulkan-headers wget)
-PROOT_CAT_PKGS_3=(wget curl git rust clang python go base-devel)
-PROOT_CAT_PKGS_4=(git base-devel)
+PROOT_DISTRO="archlinuxarm"
+PROOT_CAT_LABELS=()
 
 declare -A PROOT_PKG_SEL
 declare -A PROOT_CAT_SEL
@@ -151,14 +141,135 @@ proot_chosen() {
     PROOT_CHOSEN="${chosen[*]}"
 }
 
-# ==============================================================================
-# ДЕЙСТВИЯ PROOT ARCHLINUX
-# ==============================================================================
-install_arch() {
-    local pkgs="$1"
+proot_load_profile() {
+    PROOT_DISTRO="$1"
 
-    echo
-    if ! check_proot_distro; then return 1; fi
+    case "$PROOT_DISTRO" in
+        debian)
+            PROOT_CAT_LABELS=(
+                "${GREEN}${BOLD}[1]${RESET} Install Debian base system"
+                "${GREEN}${BOLD}[2]${RESET} Install kernel & firmware"
+                "${GREEN}${BOLD}[3]${RESET} Install GPU / Mesa stack"
+                "${GREEN}${BOLD}[4]${RESET} Install Dev Tools"
+                "${GREEN}${BOLD}[5]${RESET} Install Utilities"
+            )
+            PROOT_CAT_PKGS_0=(nano sudo fastfetch wget curl git ca-certificates)
+            PROOT_CAT_PKGS_1=(linux-image-arm64 linux-headers-arm64 firmware-linux)
+            PROOT_CAT_PKGS_2=(mesa-vulkan-drivers mesa-utils libgl1-mesa-dri vulkan-tools)
+            PROOT_CAT_PKGS_3=(build-essential clang python3 python3-pip rustc cargo golang)
+            PROOT_CAT_PKGS_4=(htop unzip zip dbus)
+            ;;
+        void)
+            PROOT_CAT_LABELS=(
+                "${GREEN}${BOLD}[1]${RESET} Install Void base system"
+                "${GREEN}${BOLD}[2]${RESET} Install kernel & firmware"
+                "${GREEN}${BOLD}[3]${RESET} Install GPU / Mesa stack"
+                "${GREEN}${BOLD}[4]${RESET} Install Dev Tools"
+                "${GREEN}${BOLD}[5]${RESET} Install Utilities"
+            )
+            PROOT_CAT_PKGS_0=(nano sudo fastfetch wget curl git)
+            PROOT_CAT_PKGS_1=(linux7.3 linux7.3-headers linux-firmware)
+            PROOT_CAT_PKGS_2=(mesa mesa-dri vulkan-loader vulkan-tools)
+            PROOT_CAT_PKGS_3=(base-devel clang python3 python3-pip rust cargo go)
+            PROOT_CAT_PKGS_4=(htop unzip zip dbus)
+            ;;
+        archlinux)
+            PROOT_CAT_LABELS=(
+                "${GREEN}${BOLD}[1]${RESET} Install Arch Linux base system"
+                "${GREEN}${BOLD}[2]${RESET} Install Linux Kernel ${DIM}(Headers & Firmware)${RESET}"
+                "${GREEN}${BOLD}[3]${RESET} Install GPU Hardware Accel ${DIM}(Mesa)${RESET}"
+                "${GREEN}${BOLD}[4]${RESET} Install Dev Tools"
+                "${GREEN}${BOLD}[5]${RESET} Install YAY ${DIM}(AUR Helper)${RESET}"
+            )
+            PROOT_CAT_PKGS_0=(nano sudo fastfetch wget curl git)
+            PROOT_CAT_PKGS_1=(linux linux-firmware linux-headers dbus)
+            PROOT_CAT_PKGS_2=(mesa mesa-demos unzip vulkan-icd-loader vulkan-headers wget)
+            PROOT_CAT_PKGS_3=(wget curl git rust clang python go base-devel)
+            PROOT_CAT_PKGS_4=(git base-devel)
+            ;;
+        archlinuxarm)
+            PROOT_CAT_LABELS=(
+                "${GREEN}${BOLD}[1]${RESET} Install Arch Linux ARM base system"
+                "${GREEN}${BOLD}[2]${RESET} Install Linux Kernel ${DIM}(Headers & Firmware)${RESET}"
+                "${GREEN}${BOLD}[3]${RESET} Install GPU Hardware Accel ${DIM}(Mesa Turnip)${RESET}"
+                "${GREEN}${BOLD}[4]${RESET} Install Dev Tools"
+                "${GREEN}${BOLD}[5]${RESET} Install YAY ${DIM}(AUR Helper)${RESET}"
+            )
+            PROOT_CAT_PKGS_0=(nano sudo fastfetch wget curl git)
+            PROOT_CAT_PKGS_1=(linux linux-firmware linux-headers dbus)
+            PROOT_CAT_PKGS_2=(mesa mesa-demos unzip vulkan-icd-loader vulkan-headers wget)
+            PROOT_CAT_PKGS_3=(wget curl git rust clang python go base-devel)
+            PROOT_CAT_PKGS_4=(git base-devel)
+            ;;
+    esac
+}
+
+# ==============================================================================
+# PROOT DISTRO HELPERS
+# ==============================================================================
+proot_is_installed() {
+    local name="$1"
+    local base="$PREFIX/var/lib/proot-distro"
+
+    [[ -d "$base/containers/$name" || -d "$base/installed-rootfs/$name" ]]
+}
+
+proot_distro_image() {
+    case "$1" in
+        debian) PROOT_DISTRO_IMAGE="debian:stable" ;;
+        void) PROOT_DISTRO_IMAGE="ghcr.io/void-linux/void-musl:latest" ;;
+        archlinux) PROOT_DISTRO_IMAGE="archlinux/archlinux:latest" ;;
+        archlinuxarm) PROOT_DISTRO_IMAGE="danhunsaker/archlinuxarm:latest" ;;
+        *) PROOT_DISTRO_IMAGE="" ;;
+    esac
+}
+
+proot_install_distro() {
+    local name="$1"
+
+    proot_distro_image "$name"
+    if [[ -z "$PROOT_DISTRO_IMAGE" ]]; then
+        echo -e "${RED}[X] Unknown distribution: $name${RESET}"
+        return 1
+    fi
+
+    if proot_is_installed "$name"; then
+        echo -e "${GREEN}[✓] $name is already installed.${RESET}"
+        return 0
+    fi
+
+    echo -e "${CYAN}Installing $name (${PROOT_DISTRO_IMAGE})...${RESET}"
+    proot-distro install -n "$name" "$PROOT_DISTRO_IMAGE"
+}
+
+proot_pm_install() {
+    local pkgs="$1"
+    [[ -z "$pkgs" ]] && return 0
+
+    case "$PROOT_DISTRO" in
+        debian)
+            proot-distro login "$PROOT_DISTRO" --shared-tmp -- env PKGS="$pkgs" bash -c '
+                apt-get update
+                apt-get install -y $PKGS
+            '
+            ;;
+        void)
+            proot-distro login "$PROOT_DISTRO" --shared-tmp -- env PKGS="$pkgs" bash -c '
+                xbps-install -Sy $PKGS
+            '
+            ;;
+        archlinux|archlinuxarm)
+            proot-distro login "$PROOT_DISTRO" --shared-tmp -- env PKGS="$pkgs" bash -c '
+                pacman -Syu --noconfirm
+                pacman -S --noconfirm $PKGS
+            '
+            ;;
+    esac
+}
+
+proot_install_arch_user() {
+    local pkgs="$1"
+    local username userpass
 
     read -p "Enter username to create: " username
     if [[ -z "$username" ]]; then
@@ -170,58 +281,28 @@ install_arch() {
     echo
     [[ -z "$userpass" ]] && userpass="qwerty"
 
-    echo "Deploying Arch Linux tarball..."
-    proot-distro install danhunsaker/archlinuxarm
-
-    proot-distro login archlinuxarm --shared-tmp -- env USERNAME="$username" USERPASS="$userpass" PKGS="$pkgs" bash -c '
-        sed -i "s/^DownloadUser = alpm/# DownloadUser = alpm/" /etc/pacman.conf
-        sed -i "s/#DisableSandboxFilesystem/DisableSandboxFilesystem/" /etc/pacman.conf
-        sed -i "s/#DisableSandboxSyscalls/DisableSandboxSyscalls/" /etc/pacman.conf
+    proot-distro login "$PROOT_DISTRO" --shared-tmp -- env USERNAME="$username" USERPASS="$userpass" PKGS="$pkgs" DISTRO="$PROOT_DISTRO" bash -c '
+        sed -i "s/^DownloadUser = alpm/# DownloadUser = alpm/" /etc/pacman.conf 2>/dev/null || true
+        sed -i "s/#DisableSandboxFilesystem/DisableSandboxFilesystem/" /etc/pacman.conf 2>/dev/null || true
+        sed -i "s/#DisableSandboxSyscalls/DisableSandboxSyscalls/" /etc/pacman.conf 2>/dev/null || true
 
         pacman -Syu --noconfirm
         if [ -n "$PKGS" ]; then
             pacman -S --noconfirm $PKGS
         fi
 
-        useradd -m -G wheel "$USERNAME"
+        useradd -m -G wheel "$USERNAME" 2>/dev/null || true
         echo "$USERNAME:$USERPASS" | chpasswd
         echo "$USERNAME ALL=(ALL:ALL) ALL" >> /etc/sudoers
 
         clear
         echo -e "\e[32m\e[1mArch Linux setup complete! User $USERNAME configured.\e[0m"
-        echo "To enter: proot-distro login archlinuxarm -> su - $USERNAME"
+        echo "To enter: proot-distro login $DISTRO -> su - $USERNAME"
     '
 }
 
-install_kernel() {
-    local pkgs="$1"
-
-    echo -e "\n${CYAN}Upgrading root core dependencies inside Arch...${RESET}"
-    proot-distro login archlinuxarm --shared-tmp -- env PKGS="$pkgs" bash -c '
-        pacman -Syu --noconfirm
-        if [ -n "$PKGS" ]; then
-            pacman -S $PKGS --noconfirm
-        fi
-    '
-}
-
-install_gpu() {
-    local pkgs="$1"
-
-    echo
-    read -p "Enter your Arch username to map driver to: " username
-    if [[ -z "$username" ]]; then
-        echo -e "${RED}Username validation failed.${RESET}"
-        return 1
-    fi
-
-    echo -e "${CYAN}Injecting custom Mesa-Turnip stack...${RESET}"
-    proot-distro login archlinuxarm --shared-tmp -- env USERNAME="$username" PKGS="$pkgs" bash -c '
-        pacman -Syu --noconfirm
-        if [ -n "$PKGS" ]; then
-            pacman -S --noconfirm $PKGS
-        fi
-
+proot_install_turnip() {
+    proot-distro login archlinuxarm --shared-tmp -- bash -c '
         cd /tmp
         wget -q --show-progress https://github.com/MatrixhKa/mesa-turnip/releases/download/24.1.0/mesa-turnip-kgsl-24.1.0-devel.zip
 
@@ -239,24 +320,11 @@ install_gpu() {
     '
 }
 
-install_devtools() {
-    local pkgs="$1"
-
-    echo -e "\n${CYAN}Installing Developer Tools...${RESET}"
-    proot-distro login archlinuxarm --shared-tmp -- env PKGS="$pkgs" bash -c '
-        pacman -Syu --noconfirm
-        if [ -n "$PKGS" ]; then
-            pacman -S --noconfirm $PKGS
-        fi
-        echo -e "\e[32m\e[1m[✓] All developer tools successfully installed!\e[0m"
-    '
-}
-
-install_yay() {
+proot_install_yay() {
     local pkgs="$1"
 
     echo -e "\n${CYAN}Installing YAY (AUR Helper) directly via PRoot optimized builder...${RESET}"
-    proot-distro login archlinuxarm --shared-tmp -- env PKGS="$pkgs" bash -c '
+    proot-distro login "$PROOT_DISTRO" --shared-tmp -- env PKGS="$pkgs" bash -c '
         if [ -n "$PKGS" ]; then
             pacman -S --noconfirm --needed $PKGS
         fi
@@ -298,13 +366,64 @@ install_yay() {
 proot_run_step() {
     local c=$1
     proot_chosen "$c"
-    case $c in
-        0) install_arch "$PROOT_CHOSEN" ;;
-        1) install_kernel "$PROOT_CHOSEN" ;;
-        2) install_gpu "$PROOT_CHOSEN" ;;
-        3) install_devtools "$PROOT_CHOSEN" ;;
-        4) install_yay "$PROOT_CHOSEN" ;;
+    local pkgs="$PROOT_CHOSEN"
+
+    if (( c == 0 )); then
+        proot_install_distro "$PROOT_DISTRO" || return 1
+        if [[ "$PROOT_DISTRO" == archlinux* ]]; then
+            proot_install_arch_user "$pkgs"
+        else
+            proot_pm_install "$pkgs"
+        fi
+        return
+    fi
+
+    if ! proot_is_installed "$PROOT_DISTRO"; then
+        echo -e "${RED}[X] $PROOT_DISTRO is not installed. Run step [1] first.${RESET}"
+        return 1
+    fi
+
+    if [[ "$PROOT_DISTRO" == archlinux* && $c -eq 4 ]]; then
+        proot_install_yay "$pkgs"
+        return
+    fi
+
+    proot_pm_install "$pkgs"
+
+    if [[ "$PROOT_DISTRO" == "archlinuxarm" && $c -eq 2 ]]; then
+        proot_install_turnip
+    fi
+}
+
+# ==============================================================================
+# ВЫБОР ДИСТРИБУТИВА
+# ==============================================================================
+select_proot_distro() {
+    local -a labels=()
+    local d n=1
+
+    for d in debian void archlinux archlinuxarm; do
+        if proot_is_installed "$d"; then
+            labels+=("${GREEN}${BOLD}[$n]${RESET} $d ${DIM}(installed)${RESET}")
+        else
+            labels+=("${GREEN}${BOLD}[$n]${RESET} $d")
+        fi
+        (( n++ ))
+    done
+    labels+=("${RED}${BOLD}[0]${RESET} Back to Main Menu")
+
+    menu_select "PROOT DISTRIBUTION" "${labels[@]}"
+
+    case $MENU_RESULT in
+        0) PROOT_DISTRO="debian" ;;
+        1) PROOT_DISTRO="void" ;;
+        2) PROOT_DISTRO="archlinux" ;;
+        3) PROOT_DISTRO="archlinuxarm" ;;
+        *) return 1 ;;
     esac
+
+    proot_load_profile "$PROOT_DISTRO"
+    return 0
 }
 
 # ==============================================================================
@@ -321,7 +440,7 @@ proot_setup_menu() {
     while true; do
         apply=0
         clear
-        ui_header "PROOT ARCHLINUX SETUP"
+        ui_header "PROOT: $PROOT_DISTRO"
 
         if [[ $mode == "cats" ]]; then
             for (( i = 0; i < cat_count; i++ )); do
@@ -441,4 +560,9 @@ proot_setup_menu() {
 # ==============================================================================
 # ГЛАВНЫЙ ЦИКЛ ОБРАБОТКИ
 # ==============================================================================
-proot_setup_menu
+while true; do
+    if ! select_proot_distro; then
+        break
+    fi
+    proot_setup_menu
+done

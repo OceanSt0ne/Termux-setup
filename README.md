@@ -42,14 +42,17 @@ Interactive menus with arrow-key navigation, package trees, and one-tap installa
   - Welcome screen via `fastfetch` or `rxfetch`.
   - Custom colors, font, fastfetch config and `.zshrc`.
 
-### PRoot Arch Linux ARM
+### PRoot Distributions
 
-- Install Arch Linux ARM base with a custom user.
-- Install kernel, headers and firmware.
-- Install Mesa Turnip GPU stack.
-- Install developer tools.
-- Install YAY (AUR helper).
-- Each step exposes its Arch packages in a tree, so only the required packages are installed.
+- Choose a distribution: **Debian**, **Void**, **Arch Linux** or **Arch Linux ARM**.
+- Each distribution has its own package tree:
+  - base system packages;
+  - kernel and firmware;
+  - GPU / Mesa stack;
+  - developer tools;
+  - utilities (or YAY for Arch-based distributions).
+- Arch-based distributions also create a custom user automatically.
+- Arch Linux ARM additionally deploys the Mesa Turnip GPU stack.
 
 ## Requirements
 
